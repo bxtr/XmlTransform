@@ -39,7 +39,7 @@ public class XmlFile {
 
     /**
      * Конструктор.
-     * @param File на загруженный xml-файл
+     * @param file на загруженный xml-файл
      * @throws ParserConfigurationException
      * @throws IOException
      * @throws SAXException
@@ -165,7 +165,7 @@ public class XmlFile {
     /**
      * Добавляет пустой тег с именем newNodeName в ноду с именем targetNodeName.
      * @param targetNodeName название тега к которому надо применить правило.
-     * @param nodeNewName название нового тега.
+     * @param newNodeName название нового тега.
      * @return этот xml-документ.
      */
     public XmlFile addNewNode(String targetNodeName, String newNodeName) {
