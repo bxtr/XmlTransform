@@ -18,10 +18,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Created by bxtr on 03.12.2016.
- */
-
-/**
  * Класс представляющий собой xml-документ с метода для его изменения.
  */
 public class XmlFile {
