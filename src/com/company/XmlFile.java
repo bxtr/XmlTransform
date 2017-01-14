@@ -21,12 +21,33 @@ import java.util.regex.Pattern;
  * Created by bxtr on 03.12.2016.
  */
 
+/**
+ * Класс представляющий собой xml-документ с метода для его изменения.
+ */
 public class XmlFile {
 
+    /**
+     * Загруженный xml-документ.
+     */
     private Document downloadedXML;
+
+    /**
+     * Лог, в который пишутся сообщения во время валидации.
+     */
     private XmlValidationLog validationLog;
+
+    /**
+     * Лист хранящий правила трансформации и валидации для последующего запуска.
+     */
     private List<Rules> rulesList;
 
+    /**
+     * Конструктор.
+     * @param File на загруженный xml-файл
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
     public XmlFile(File file) throws ParserConfigurationException, IOException, SAXException {
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -38,6 +59,10 @@ public class XmlFile {
         validationLog = new XmlValidationLog();
     }
 
+    /**
+     * Метод выводящий в консоль xml-файл.
+     * @throws Exception
+     */
     public void write() throws Exception {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -46,17 +71,25 @@ public class XmlFile {
         transformer.transform(source, consoleResult);
     }
 
-    //Возвращает лог валидации XML-документа
+    /**
+     * Возвращает лог валидации xml-документа.
+     * @return все сообщений из лога в виде одной строки.
+     */
     public String getValidationLog() {
         return validationLog.getValidationLog();
     }
 
-    //Были ли ошибки при валидации документа?
+    /**
+     * Были ли ошибки при валидации документа?
+     * @return веренет true, если ошибок не было, и false иначе.
+     */
     public boolean isValid() {
         return validationLog.isValid();
     }
 
-    //Запуск добавленных правил
+    /**
+     * Запуск добавленных правил трансформации и валидации.
+     */
     public void execute() {
         for(XmlFile.Rules rule : rulesList) {
             rule.runRule();
@@ -64,7 +97,9 @@ public class XmlFile {
         rulesList = new ArrayList<>();
     }
 
-    //Ошибки валидации
+    /**
+     * Ошибки валидации.
+     */
     enum ValidationError {
         TYPE_ERROR("Тип не соответствует заданному. Ошибка в теге: %s."),
         CROSS_VALIDATION_ERROR("Значения %s и %s не совпадают.");
@@ -84,7 +119,9 @@ public class XmlFile {
         }
     }
 
-    //Лог для валидации XML-документа
+    /**
+     * Лог для валидации xml-документа.
+     */
     private class XmlValidationLog {
         private Set<String> buffer;
         private boolean valid;
@@ -118,60 +155,98 @@ public class XmlFile {
         /* Методы позволяющие получить правила трансформации и валидации XML-файла */
         /*                                                                         */
 
-    //меняет название тега
+    /**
+     * Меняет название тега.
+     * @param targetNodeName название тега к которому надо применить правило.
+     * @param nodeNewName название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile changeNodeName(String targetNodeName, String nodeNewName){
         rulesList.add(new ChangeNodeNameRule(targetNodeName, nodeNewName));
         return this;
     }
 
-    //добавляет пустой тег с именем newNodeName в ноду с именем targetNodeName
+    /**
+     * Добавляет пустой тег с именем newNodeName в ноду с именем targetNodeName.
+     * @param targetNodeName название тега к которому надо применить правило.
+     * @param nodeNewName название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile addNewNode(String targetNodeName, String newNodeName) {
         rulesList.add(new AddNewNodeRule(targetNodeName, newNodeName));
         return this;
     }
 
-    //Меняет рутовый тег. Нормально работает если рутовый элемент один. Так же работает если количество элементов
-    // и количество рутовых элементов одинаковое, но в этом случае, его следует использовать только если не возможно достичь
-    // желаемого результата другими методами, тк он сложный, и скорее всего долгий. Если количество элементов и рутовых
-    // элементов разное - то будут переименована часть тегов, начиная с конца документа.
+    /**
+     * Меняет рутовый тег. Нормально работает если рутовый элемент один. Так же работает если количество элементов
+     * и количество рутовых элементов одинаковое, но в этом случае, его следует использовать только если не возможно достичь
+     * желаемого результата другими методами, тк он сложный, и скорее всего долгий. Если количество элементов и рутовых
+     * элементов разное - то будут переименована часть тегов, начиная с конца документа.
+     * @param targetNodeName название тега к которому надо применить правило.
+     * @param newParentNodeName название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile changeRootTag(String targetNodeName, String newParentNodeName) {
         rulesList.add(new ChangeRootTagRule(targetNodeName, newParentNodeName));
         return this;
     }
 
-    //Добавляет вокруг текста ноды с именем targetTextNodeName новый тег с именем newNodeTextName
+    /**
+     * Добавляет вокруг текста ноды с именем targetTextNodeName новый тег с именем newNodeTextName.
+     * @param targetTextNodeName название тега к которому надо применить правило.
+     * @param newNodeTextName название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile addNewTextNode(String targetTextNodeName, String newNodeTextName) {
         rulesList.add(new AddNewTextNodeRule(targetTextNodeName, newNodeTextName));
         return this;
     }
 
-    //Валидирует по заданному паттерну, и в случае провала выдает ошибку о неверном типе данных
+    /**
+     * Валидирует по заданному паттерну, и в случае провала выдает ошибку о неверном типе данных.
+     * @param targetTextNodeName название тега к которому надо применить правило.
+     * @param pattern название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile typeValidation(String targetTextNodeName, String pattern) {
         rulesList.add(new TypeValidationRule(targetTextNodeName, pattern));
         return this;
     }
 
-    //Ищет вхождение текста из fromTextNodeName в тексте ноды с именем targetTextNodeName
+    /**
+     * Ищет вхождение текста из fromTextNodeName в тексте ноды с именем targetTextNodeName.
+     * @param targetTextNodeName название тега к которому надо применить правило.
+     * @param fromTextNodeName название нового тега.
+     * @return этот xml-документ.
+     */
     public XmlFile crossValidation(String targetTextNodeName, String fromTextNodeName) {
         rulesList.add(new CrossValidationRule(targetTextNodeName, fromTextNodeName));
         return this;
     }
 
-
         /*                                                                         */
         /*              Правила для трансформации и валидации XML-файла.           */
         /*                                                                         */
 
-
-    //Общий интерфейс для всех правил
+    /**
+     * Общий интерфейс для всех правил.
+     */
     interface Rules {
-        //Метод должен содержать обработку выбранной ноды
+        /**
+         * Метод должен содержать обработку выбранной ноды.
+         * @param node
+         */
         void apply(Node node);
-        //Метод для запуска правила
+
+        /**
+         * Метод для запуска правила.
+         */
         void runRule();
     }
 
-    //Абстрактный класс для правил. Содержит код запуска правил и хранит имя выбранного тега XML-документа
+    /**
+     * Абстрактный класс для правил. Содержит код запуска правил и хранит имя выбранного тега XML-документа.
+     */
     abstract class AbstractRunnableRule implements Rules {
         private String targetNodeName;
 
