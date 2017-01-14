@@ -6,9 +6,7 @@ import java.util.List;
 
 public class Main {
 
-    private static final String FILE_PATH_75_2 = "C:\\Users\\basic\\Desktop\\Клиентские\\75-2_client.xml";
-    private static final String FILE_PATH_75_3 = "C:\\Users\\basic\\Desktop\\Клиентские\\75-3_client.xml";
-    private static final String FILE_PATH_75_4 = "C:\\Users\\basic\\Desktop\\Клиентские\\75-4_client.xml";
+    private static final String FILE_PATH_75_2 = "C:\\";
 
     public static void main(String[] args) {
         /* иницилизация класса для обработки и валидации загруженного XML-файла */
@@ -19,6 +17,11 @@ public class Main {
          //   xmlFile.write();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if(xmlFile == null) {
+            System.out.println("Не удалось прочитать xml-файл.");
+            return;
         }
 
 
@@ -43,23 +46,23 @@ public class Main {
         for(DbEntity dbEntity : dbEntityList) {
             //сначала правила валидации
             if(dbEntity.patternType != null) {
-                rulesList.add(xmlFile.getTypeValidationRule(dbEntity.name, dbEntity.patternType));
+                xmlFile.typeValidation(dbEntity.name, dbEntity.patternType);
             }
             //добавление новых тегов
             if(dbEntity.childTag != null) {
                 //если тег содержит внутри себя другой тег, который нужно перенести в новый тег, то
                 //в parentTag пишем его значение
                 if(dbEntity.parentTag != null) {
-                    rulesList.add(xmlFile.getAddNewNodeRule(dbEntity.name, dbEntity.childTag));
-                    rulesList.add(xmlFile.getChangeRootTagRule(dbEntity.parentTag, dbEntity.childTag));
+                    xmlFile.addNewNode(dbEntity.name, dbEntity.childTag);
+                    xmlFile.changeRootTag(dbEntity.parentTag, dbEntity.childTag);
                 } else {
                 //если тег содержит только текст, то просто переносим его
-                    rulesList.add(xmlFile.getAddNewTextNodeRule(dbEntity.name, dbEntity.childTag));
+                    xmlFile.addNewTextNode(dbEntity.name, dbEntity.childTag);
                 }
             }
             //изменяем имя тега
             if(dbEntity.changesName != null) {
-                rulesList.add(xmlFile.getChangeNodeNameRule(dbEntity.name, dbEntity.changesName));
+                xmlFile.changeNodeName(dbEntity.name, dbEntity.changesName);
             }
         }
 

@@ -25,6 +25,7 @@ public class XmlFile {
 
     private Document downloadedXML;
     private XmlValidationLog validationLog;
+    private List<Rules> rulesList;
 
     public XmlFile(File file) throws ParserConfigurationException, IOException, SAXException {
 
@@ -32,7 +33,7 @@ public class XmlFile {
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document downloadedXML = documentBuilder.parse(file);
         downloadedXML.getDocumentElement().normalize();
-
+        rulesList = new ArrayList<>();
         this.downloadedXML = downloadedXML;
         validationLog = new XmlValidationLog();
     }
@@ -53,6 +54,14 @@ public class XmlFile {
     //Были ли ошибки при валидации документа?
     public boolean isValid() {
         return validationLog.isValid();
+    }
+
+    //Запуск добавленных правил
+    public void execute() {
+        for(XmlFile.Rules rule : rulesList) {
+            rule.runRule();
+        }
+        rulesList = new ArrayList<>();
     }
 
     //Ошибки валидации
@@ -109,38 +118,43 @@ public class XmlFile {
         /* Методы позволяющие получить правила трансформации и валидации XML-файла */
         /*                                                                         */
 
-
     //меняет название тега
-    public Rules getChangeNodeNameRule(String targetNodeName, String nodeNewName) {
-        return new ChangeNodeNameRule(targetNodeName, nodeNewName);
+    public XmlFile changeNodeName(String targetNodeName, String nodeNewName){
+        rulesList.add(new ChangeNodeNameRule(targetNodeName, nodeNewName));
+        return this;
     }
 
     //добавляет пустой тег с именем newNodeName в ноду с именем targetNodeName
-    public Rules getAddNewNodeRule(String targetNodeName, String newNodeName) {
-        return new AddNewNodeRule(targetNodeName, newNodeName);
+    public XmlFile addNewNode(String targetNodeName, String newNodeName) {
+        rulesList.add(new AddNewNodeRule(targetNodeName, newNodeName));
+        return this;
     }
 
     //Меняет рутовый тег. Нормально работает если рутовый элемент один. Так же работает если количество элементов
     // и количество рутовых элементов одинаковое, но в этом случае, его следует использовать только если не возможно достичь
     // желаемого результата другими методами, тк он сложный, и скорее всего долгий. Если количество элементов и рутовых
     // элементов разное - то будут переименована часть тегов, начиная с конца документа.
-    public Rules getChangeRootTagRule(String targetNodeName, String newParentNodeName) {
-        return new ChangeRootTagRule(targetNodeName, newParentNodeName);
+    public XmlFile changeRootTag(String targetNodeName, String newParentNodeName) {
+        rulesList.add(new ChangeRootTagRule(targetNodeName, newParentNodeName));
+        return this;
     }
 
     //Добавляет вокруг текста ноды с именем targetTextNodeName новый тег с именем newNodeTextName
-    public Rules getAddNewTextNodeRule(String targetTextNodeName, String newNodeTextName) {
-        return new AddNewTextNodeRule(targetTextNodeName, newNodeTextName);
+    public XmlFile addNewTextNode(String targetTextNodeName, String newNodeTextName) {
+        rulesList.add(new AddNewTextNodeRule(targetTextNodeName, newNodeTextName));
+        return this;
     }
 
     //Валидирует по заданному паттерну, и в случае провала выдает ошибку о неверном типе данных
-    public Rules getTypeValidationRule(String targetTextNodeName, String pattern) {
-        return new TypeValidationRule(targetTextNodeName, pattern);
+    public XmlFile typeValidation(String targetTextNodeName, String pattern) {
+        rulesList.add(new TypeValidationRule(targetTextNodeName, pattern));
+        return this;
     }
 
     //Ищет вхождение текста из fromTextNodeName в тексте ноды с именем targetTextNodeName
-    public Rules getCrossValidationRule(String targetTextNodeName, String fromTextNodeName) {
-        return new CrossValidationRule(targetTextNodeName, fromTextNodeName);
+    public XmlFile crossValidation(String targetTextNodeName, String fromTextNodeName) {
+        rulesList.add(new CrossValidationRule(targetTextNodeName, fromTextNodeName));
+        return this;
     }
 
 
